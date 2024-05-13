@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta name="viewport" content="width=device-width, inicial scale=1, shrink-to-fit=no" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="Scripts/bootstrap.bundle.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+
+
+    <style>
+        .header {
+            background-image: url(https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=1111&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
+            background-size: cover;
+            text-align: center;
+            padding: 50px;
+        }
+
+            .header h1 {
+                color: whitesmoke;
+                display: inline-block;
+                padding: 10px;
+            }
+    </style>
+    <title></title>
+</head>
+<body>
+    <div class="header">
+        <h1>PARCIAL 2 ANALISIS NUMERICO</h1>
+    </div>
+
+    <h1>Resolver Sistema de Ecuaciones</h1>
+    <form id="equationForm">
+        <label for="equationCount">Número de ecuaciones (n):</label>
+        <input type="number" id="equationCount" name="equationCount" min="1" required><br><br>
+
+        <label for="unknownCount">Número de incógnitas (m):</label>
+        <input type="number" id="unknownCount" name="unknownCount" min="1" required><br><br>
+
+        <div id="equationInputs"></div>
+
+        <button type="submit">Resolver</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('equationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const equationCount = parseInt(document.getElementById('equationCount').value);
+            const unknownCount = parseInt(document.getElementById('unknownCount').value);
+            const coefficients = [];
+            const constants = [];
+
+            for (let i = 0; i < equationCount; i++) {
+                const equationCoefficients = [];
+                for (let j = 0; j < unknownCount; j++) {
+                    equationCoefficients.push(parseFloat(document.getElementById(`coef_${i}_${j}`).value));
+                }
+                coefficients.push(equationCoefficients);
+                constants.push(parseFloat(document.getElementById(`const_${i}`).value));
+            }
+
+            // Enviar los datos al servidor ASPX para resolver el sistema de ecuaciones
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'Solver.aspx', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const result = JSON.parse(xhr.responseText);
+                    document.getElementById('result').innerHTML = `<h2>Resultados:</h2><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                } else {
+                    console.error('Hubo un error en la solicitud.');
+                }
+            };
+            xhr.send(JSON.stringify({ coefficients: coefficients, constants: constants }));
+        });
+
+        document.getElementById('equationCount').addEventListener('change', function () {
+            const equationCount = parseInt(this.value);
+            const unknownCount = parseInt(document.getElementById('unknownCount').value);
+            const equationInputs = document.getElementById('equationInputs');
+            equationInputs.innerHTML = '';
+
+            for (let i = 0; i < equationCount; i++) {
+                for (let j = 0; j < unknownCount; j++) {
+                    equationInputs.innerHTML += `<label for="coef_${i}_${j}">Coeficiente ${i + 1},${j + 1}:</label>`;
+                    equationInputs.innerHTML += `<input type="number" id="coef_${i}_${j}" name="coef_${i}_${j}" step="0.01" required>`;
+                    equationInputs.innerHTML += `<br>`;
+                }
+                equationInputs.innerHTML += `<label for="const_${i}">Término independiente ${i + 1}:</label>`;
+                equationInputs.innerHTML += `<input type="number" id="const_${i}" name="const_${i}" step="0.01" required>`;
+                equationInputs.innerHTML += `<br><br>`;
+            }
+        });
+
+        document.getElementById('unknownCount').addEventListener('change', function () {
+            const unknownCount = parseInt(this.value);
+            const equationCount = parseInt(document.getElementById('equationCount').value);
+            const equationInputs = document.getElementById('equationInputs');
+            equationInputs.innerHTML = '';
+
+            for (let i = 0; i < equationCount; i++) {
+                for (let j = 0; j < unknownCount; j++) {
+                    equationInputs.innerHTML += `<label for="coef_${i}_${j}">Coeficiente ${i + 1},${j + 1}:</label>`;
+                    equationInputs.innerHTML += `<input type="number" id="coef_${i}_${j}" name="coef_${i}_${j}" step="0.01" required>`;
+                    equationInputs.innerHTML += `<br>`;
+                }
+                equationInputs.innerHTML += `<label for="const_${i}">Término independiente ${i + 1}:</label>`;
+                equationInputs.innerHTML += `<input type="number" id="const_${i}" name="const_${i}" step="0.01" required>`;
+                equationInputs.innerHTML += `<br><br>`;
+            }
+        });
+    </script>
+</body>
+</html>
+
